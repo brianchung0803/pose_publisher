@@ -10,7 +10,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include "std_msgs/Float64MultiArray.h"
 #include<math.h>
-
+#include<iostream>
+using namespace std;
 
 
 people_msgs::PositionMeasurement legs_published;
@@ -24,8 +25,8 @@ void leg_detector_callback( const people_msgs::PositionMeasurementArray::ConstPt
 {
     
     double max;
-    int length=sizeof(legs->people)/sizeof(people_msgs::PositionMeasurement);
-    
+    int length = legs->people.size();
+    cout <<length <<endl;
     if(length!=0)
     {
         max=legs->people[0].reliability;
@@ -44,9 +45,9 @@ void leg_detector_callback( const people_msgs::PositionMeasurementArray::ConstPt
 
     else 
     {
-        tracking=false;
-        return;
+        tracking=false;  
     }
+
 
     
 }
@@ -67,7 +68,7 @@ int main (int argc, char ** argv)
 
     ros::init(argc,argv,"pose_publisher");
     ros::NodeHandle n;
-    ros::Subscriber sub_1=n.subscribe("leg_tracker_measurements",1,leg_detector_callback);
+    ros::Subscriber sub_1=n.subscribe("people_tracker_measurements",1,leg_detector_callback);
     ros::Subscriber sub_2=n.subscribe("tracker_angles",1,headercallback);
     ros::Subscriber sub_3=n.subscribe("amcl_pose",1,robot_position_callback);
 
@@ -80,6 +81,7 @@ int main (int argc, char ** argv)
     
     while(ros::ok())
     {
+        ros::Duration(2).sleep();
         if(tracking)
         {
         double x_arr=(legs_published.pos.x-bot_pos.position.x)*0.7;
@@ -88,6 +90,9 @@ int main (int argc, char ** argv)
         double x_final=bot_pos.position.x+x_arr;
         double y_final=bot_pos.position.y+y_arr;
 
+
+        cout <<"x"<< x_final <<endl;
+        cout <<"y"<< y_final <<endl;
         move_base_msgs::MoveBaseGoal goal;
 
         
